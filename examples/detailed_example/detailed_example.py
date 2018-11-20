@@ -3,11 +3,25 @@ This is a detailed example using almost every command of the API
 """
 
 import time
-
+# import datetime
 import telebot
 from telebot import types
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup,ReplyKeyboardRemove
+import logging
+import requests
+from logging import Handler, Formatter
+from telegram.ext import Updater
+from telegram.ext import  CallbackQueryHandler
+from telegram.ext import  CommandHandler
+from telegram import  ReplyKeyboardRemove
+from datetime import datetime
+from threading import Timer
 
-TOKEN = '<token_string>'
+import telegramcalendar
+import calendar
+
+
+TOKEN = '628970389:AAEcf7VJtq-RpYnSR02sbd6REmDY1e0Unuc'
 
 knownUsers = []  # todo: save these in a file,
 userStep = {}  # so they won't reset every time the bot restarts
@@ -24,8 +38,10 @@ imageSelect.add('cock', 'pussy')
 
 hideBoard = types.ReplyKeyboardRemove()  # if sent as reply_markup, will hide the keyboard
 
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
-# error handling if user isn't known yet
+logger = logging.getLogger(__name__)
 # (obsolete once known users are saved to file, because all users
 #   had to use the /start command and are therefore known to the bot)
 def get_user_step(uid):
@@ -53,18 +69,70 @@ bot = telebot.TeleBot(TOKEN)
 bot.set_update_listener(listener)  # register listener
 
 
+def hello_world():
+    print("hello world")
+
+def set_timer():
+    """Add a job to the queue."""
+    # cid = messages.chat.id
+    x = datetime.today()
+    y = x.replace(day=x.day, hour=3, minute=33, second=0)
+    delta_t=y-x
+
+    secs=delta_t.seconds+1
+    print("hello")
+    # bot.send_message("testing")
+    t = Timer(secs, hello_world)
+    t.start()
+
 # handle the "/start" command
 @bot.message_handler(commands=['start'])
 def command_start(m):
     cid = m.chat.id
-    if cid not in knownUsers:  # if user hasn't used the "/start" command yet:
-        knownUsers.append(cid)  # save user id, so you could brodcast messages to all users of this bot later
-        userStep[cid] = 0  # save user id and his current "command level", so he can use the "/getImage" command
-        bot.send_message(cid, "Hello, stranger, let me scan you...")
-        bot.send_message(cid, "Scanning complete, I know you now")
-        command_help(m)  # show the new user the help page
-    else:
-        bot.send_message(cid, "I already know you, no need for me to scan you again!")
+    name = m.chat.username
+    # if cid not in knownUsers:  # if user hasn't used the "/start" command yet:
+    # knownUsers.append(cid)  # save user id, so you could brodcast messages to all users of this bot later
+    # userStep[cid] = 0  # save user id and his current "command level", so he can use the "/getImage" command
+    bot.send_message(cid, "Hi @%s ! Welcome to Kronos Daily Attendance helper bot!" %name)
+
+    markup = types.ReplyKeyboardMarkup()
+    itembtna = types.KeyboardButton('/Start_working')
+    itembtnv = types.KeyboardButton('/Sick_leave')
+    itembtnc = types.KeyboardButton('/Business Trip')
+    itembtnd = types.KeyboardButton('/Vacation')
+    itembtne = types.KeyboardButton('/cancel')
+    markup.row(itembtna, itembtnv)
+    markup.row(itembtnc, itembtnd, itembtne)
+    bot.send_message(cid, "Please choose a command below:", reply_markup=markup)
+
+
+@bot.message_handler(commands=['Start_working'])
+def command_start_working(m):
+    cid = m.chat.id
+    bot.send_message(cid, "Have a nice day working buddy!")
+    now = datetime.now()
+    now = now.replace(second=0, microsecond=0)
+    # now.strftime('%Y-%m-%dT%H:%M')
+    bot.send_message(cid, "@%s" %now)
+
+@bot.message_handler(commands=['Sick_leave'])
+def command_sick_leave(m):
+    cid = m.chat.id
+    bot.send_message(cid, "Oh no, hope you will get well soon.")
+    #implement a calendar here
+    # bot.send_message(cid, "Please choose the duration of this leave", reply_markup=telegramcalendar.create_calendar())
+
+@bot.message_handler(commands=['Business_trip'])
+def command_business_trip(m):
+    cid = m.chat.id
+    bot.send_message(cid, "All the best!")
+    #implement a calendar here
+
+@bot.message_handler(commands=['Vacation'])
+def command_vacation(m):
+    cid = m.chat.id
+    bot.send_message(cid, "So good")
+    #implement a calendar here
 
 
 # help page
@@ -129,5 +197,7 @@ def command_default(m):
     # this is the standard reply to a normal message
     bot.send_message(m.chat.id, "I don't understand \"" + m.text + "\"\nMaybe try the help page at /help")
 
+
+set_timer()
 
 bot.polling()
