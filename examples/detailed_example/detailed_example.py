@@ -14,9 +14,9 @@ from telegram.ext import Updater
 from telegram.ext import  CallbackQueryHandler
 from telegram.ext import  CommandHandler
 from telegram import  ReplyKeyboardRemove
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Timer
-
+import csv
 import telegramcalendar
 import calendar
 
@@ -106,14 +106,29 @@ def command_start(m):
     bot.send_message(cid, "Please choose a command below:", reply_markup=markup)
 
 
+employees = ['Shawntw', 'Shawn']
+dict_working = dict.fromkeys(employees)
+dict_finish = dict.fromkeys(employees)
+
 @bot.message_handler(commands=['Start_working'])
 def command_start_working(m):
     cid = m.chat.id
+    name = m.chat.username
     bot.send_message(cid, "Have a nice day working buddy!")
     now = datetime.now()
-    now = now.replace(second=0, microsecond=0)
+    now.strftime('%Y-%m-%d %H:%M')
+    off = datetime.now() + timedelta(hours=9)
+    off.strftime('%Y-%m-%d %H:%M')
     # now.strftime('%Y-%m-%dT%H:%M')
     bot.send_message(cid, "@%s" %now)
+    dict_working['%s'% name] = now
+    dict_finish['%s'% name] = off
+
+
+    print(dict_working)
+    print(dict_finish)
+
+
 
 @bot.message_handler(commands=['Sick_leave'])
 def command_sick_leave(m):
