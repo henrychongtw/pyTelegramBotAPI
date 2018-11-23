@@ -109,6 +109,7 @@ def command_start(m):
 employees = ['Shawntw', 'Shawn']
 dict_working = dict.fromkeys(employees)
 dict_finish = dict.fromkeys(employees)
+csvfile = './test.csv'
 
 @bot.message_handler(commands=['Start_working'])
 def command_start_working(m):
@@ -123,6 +124,11 @@ def command_start_working(m):
     bot.send_message(cid, "@%s" %now)
     dict_working['%s'% name] = now
     dict_finish['%s'% name] = off
+
+    with open(csvfile, 'a') as output:
+        writer = csv.writer(output)
+        for key, value in dict_working.items():
+            writer.writerow([key, value])
 
 
     print(dict_working)
